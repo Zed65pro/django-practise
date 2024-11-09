@@ -21,7 +21,7 @@ class BookDetailView(generics.RetrieveAPIView):
 
 
 class PublisherListView(generics.ListAPIView):
-    queryset = Publisher.objects.annotate(num_books=Count('books'))
+    queryset = Publisher.objects.all()
     serializer_class = PublisherSerializer
     search_fields = ['name', 'country']
 

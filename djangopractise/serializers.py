@@ -1,13 +1,13 @@
+from django.db.models import Count
 from rest_framework import serializers
 from .models import Book, Publisher, Genre
 
 
 class PublisherSerializer(serializers.ModelSerializer):
-    num_books = serializers.IntegerField()
 
     class Meta:
         model = Publisher
-        fields = ['id', 'name', 'country', 'num_books']
+        fields = ['id', 'name', 'country']
 
 
 class GenreSerializer(serializers.ModelSerializer):
