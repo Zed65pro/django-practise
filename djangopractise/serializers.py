@@ -3,9 +3,11 @@ from .models import Book, Publisher, Genre
 
 
 class PublisherSerializer(serializers.ModelSerializer):
+    num_books = serializers.IntegerField()
+
     class Meta:
         model = Publisher
-        fields = ['id', 'name', 'country']
+        fields = ['id', 'name', 'country', 'num_books']
 
 
 class GenreSerializer(serializers.ModelSerializer):
