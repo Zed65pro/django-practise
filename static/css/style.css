@@ -1,0 +1,137 @@
+/*================================================================================
+	Item Name:
+	Version: 1.0
+	Author:
+
+    Theme colors
+    #D61969 - red
+    #00A0DF - blue
+    #1881ab - dark blue
+    #FFD100 - yellow
+    #01AA90 - green
+    #4C4C4C - black
+    #9B9B9B - grey
+
+================================================================================
+ */
+@font-face {
+    font-family: 'HelveticaNeueLT';
+    src: url("../fonts/helveticaneue/HelveticaNeueLT.otf") format("truetype");
+    unicode-range: U+0600-06FF;  /* Arabic characters unicode range */
+}
+
+*, li, p, a, h1, h2, h3, h4, h5, h6, span, text, label, button, input, select, option {
+    unicode-bidi: embed;
+    font-family: 'HelveticaNeueLT', Quicksand, Georgia, 'Times New Roman', Times, serif;
+}
+
+
+/* Datatable styles */
+table.datatable:not(.datatable-rendered) tbody {
+    display: none;
+}
+
+table.datatable:not(.datatable-rendered)::after {
+    content: 'Loading ...';
+    position: absolute;
+    padding: 0.5rem 0;
+    left: 46%;
+}
+
+table.table.datatable th, table.table.datatable td {
+    padding: .4rem 1rem;
+    vertical-align: middle;
+}
+
+table.table.datatable th {
+    border-top: none;
+    padding: 0.6rem 1rem;
+}
+
+.requiredField .asteriskField {
+    color: red;
+}
+
+.navbar-header {
+    background: linear-gradient(to right, #162e5d, #252b5d) !important;
+}
+
+.navbar-container {
+    background: linear-gradient(to right, #162e5d, #3c285f, #162e5d) !important;
+}
+
+.main-menu.menu-light .navigation li a {
+    color: black !important;
+}
+
+.main-menu.menu-light .navigation > li.hover > a, .main-menu.menu-light .navigation > li ul li > a:hover, .main-menu.menu-light .navigation > li.active > a {
+    color: black !important;
+}
+
+span.delete-button a {
+    position: absolute;
+    right: 16px;
+    top: 0px;
+    color: white !important;
+}
+
+#formsets > .multiField:nth-child(odd), .formsets > .multiField:nth-child(odd) {
+    background-color: #F3F4F9;
+    border-radius: 0.2rem;
+}
+
+#season-formsets > .multiField {
+    background-color: #F3F4F9;
+    border-radius: 0.2rem;
+}
+
+.card-header-sub-hr {
+    border-bottom: 1px solid #D1D5EA;
+}
+
+.section-header {
+    font-weight: 400;
+    padding-left: 50px;
+    padding-top: 50px;
+}
+
+.tagify {
+    height: auto;
+}
+
+.dashed-border-bottom-grey {
+    border: 1px dashed #e0e0e0;
+}
+
+.droppable {
+    line-height: 50px;
+}
+
+#sortable {
+    display: grid;
+    grid-template-rows: repeat(20, auto);
+    grid-template-columns: repeat(auto-fill, auto);
+    grid-column-gap: 2em;
+    grid-row-gap: 2em;
+    grid-auto-flow: column;
+    overflow-x: auto;
+    list-style: none;
+}
+
+#sortable li .channels {
+    display: flex;
+    flex-direction: row;
+    vertical-align: center;
+    height: 60px;
+    overflow: hidden;
+}
+
+.channel-number {
+    border-right: solid darkgray 1px;
+    min-width: 50px;
+    text-align: center;
+}
+
+.channel-title {
+    padding-inline-start: 1rem;
+}

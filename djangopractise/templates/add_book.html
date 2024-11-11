@@ -1,0 +1,86 @@
+{% extends "index.html" %}
+
+{% block title %}Add a New Book{% endblock %}
+
+{% block template %}
+<h2 class="mb-4">Add a New Book</h2>
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+{% endfor %}
+{% endif %}
+
+<form method="post" class="card p-4">
+    {% csrf_token %}
+    <div class="form-group">
+        {{ form.title.label_tag }} {{ form.title }}
+        {% if form.title.errors %}
+        <div class="alert alert-danger">
+            {% for error in form.title.errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="form-group">
+        {{ form.author.label_tag }} {{ form.author }}
+        {% if form.author.errors %}
+        <div class="alert alert-danger">
+            {% for error in form.author.errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="form-group">
+        {{ form.publication_date.label_tag }} {{ form.publication_date }}
+        {% if form.publication_date.errors %}
+        <div class="alert alert-danger">
+            {% for error in form.publication_date.errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="form-group">
+        {{ form.rating.label_tag }} {{ form.rating }}
+        {% if form.rating.errors %}
+        <div class="alert alert-danger">
+            {% for error in form.rating.errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="form-group">
+        {{ form.genre.label_tag }}
+        <div>
+            {{ form.genre }}
+        </div>
+        {% if form.genre.errors %}
+        <div class="alert alert-danger">
+            {% for error in form.genre.errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="form-group">
+        {{ form.publisher.label_tag }} {{ form.publisher }}
+        {% if form.publisher.errors %}
+        <div class="alert alert-danger">
+            {% for error in form.publisher.errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <button type="submit" class="btn btn-primary">Save Book</button>
+</form>
+{% endblock %}

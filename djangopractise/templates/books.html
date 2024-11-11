@@ -1,0 +1,63 @@
+{% extends "index.html" %}
+{% load books_template_tags %}
+
+{% block title %}Book List{% endblock %}
+
+{% block template %}
+<h2 class="mb-4">Book List</h2>
+
+<div class="row">
+    {% for book in books %}
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ book.title }}</h5>
+                <h6 class="card-subtitle text-muted">by {{ book.author }}</h6>
+                <p class="card-text mt-2">
+                    Publisher: {{ book.publisher.name }} <br>
+                    Genres: {{ book.genre.all|join:", " }} <br>
+                    Rating: {{ book.rating|star_rating }}
+                </p>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p class="text-center">No books found.</p>
+    {% endfor %}
+</div>
+<nav>
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1" aria-label="First">
+                &laquo;
+            </a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                &lsaquo;
+            </a>
+        </li>
+        {% endif %}
+
+        <li class="page-item disabled">
+                <span class="page-link">
+                    Page {{ page_obj.number }} of {{ paginator.num_pages }}
+                </span>
+        </li>
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                &rsaquo;
+            </a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ paginator.num_pages }}" aria-label="Last">
+                &raquo;
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endblock %}

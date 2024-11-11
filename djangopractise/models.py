@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 
@@ -20,7 +21,9 @@ class Book(models.Model):
     title = models.CharField(max_length=255)
     author = models.CharField(max_length=100)
     publication_date = models.DateField()
-    rating = models.FloatField()
+    rating = models.FloatField(
+        validators=[MinValueValidator(0), MaxValueValidator(5)]
+    )
     genre = models.ManyToManyField(Genre, related_name='books')
     publisher = models.ForeignKey(Publisher, on_delete=models.CASCADE, related_name='books')
 
