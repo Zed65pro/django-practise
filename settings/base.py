@@ -23,6 +23,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'django_filters',
     'djangopractise',
+    'crispy_forms',
+    'crispy_bootstrap4',
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -135,3 +137,6 @@ CACHES = {
         'LOCATION': './cache/',
     }
 }
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap4'
+CRISPY_TEMPLATE_PACK = 'bootstrap4'

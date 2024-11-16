@@ -1,10 +1,12 @@
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Prefetch, Count
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView
+from django.views import View
+from django.views.generic import ListView, CreateView, UpdateView
 from rest_framework import generics
 
-from .forms import BookForm
+from .forms import BookForm, BookFormSet, NewBookForm
 from .models import Book, Genre, Publisher
 from .serializers import BookSerializer, PublisherSerializer, GenreSerializer
 from .filters import BookFilter
@@ -56,3 +58,11 @@ class BookCreateView(SuccessMessageMixin, CreateView):
     template_name = 'add_book.html'
     success_url = reverse_lazy('books-view')
     success_message = "Book '%(title)s' added successfully!"
+
+
+class BookFormsetCreateView(SuccessMessageMixin, CreateView):
+    form_class = NewBookForm
+    template_name = 'new_book_form.html'
+    success_url = reverse_lazy('books-view')
+    success_message = "Book '%(title)s' added successfully!"
+    model = Book
