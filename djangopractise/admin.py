@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Book, Publisher, Genre
+from .models import Book, Publisher, Genre, SizedBook, GoodBook
 
 
 @admin.register(Publisher)
@@ -21,3 +21,14 @@ class BookAdmin(admin.ModelAdmin):
     search_fields = ('title', 'author')
     ordering = ('title',)
     filter_horizontal = ('genre',)
+
+
+@admin.register(SizedBook)
+class SizedBookAdmin(BookAdmin):
+    list_display = ('size',)
+    search_fields = ('size',)
+
+
+@admin.register(GoodBook)
+class ProxyBookAdmin(BookAdmin):
+    pass

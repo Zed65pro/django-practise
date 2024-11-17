@@ -29,3 +29,20 @@ class Book(models.Model):
 
     def __str__(self):
         return f'{self.title} by {self.author} ({self.publisher.name})'
+
+
+class SizedBook(Book):
+
+    size = models.PositiveIntegerField()
+
+
+class GoodBookManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(rating__gte=4.0)
+
+
+class GoodBook(Book):
+    objects = GoodBookManager()
+
+    class Meta:
+        proxy = True
