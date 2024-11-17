@@ -1,0 +1,219 @@
+ORM:
+basically writing queries using python i.e book.objects.all = select * from books 
+
+python -> ORM (python to SQL) -> (adaptor/driver) -> Database
+
+adaptor/driver is a set of library functions which allow client to pass queries to database server and recieve results of query
+i.e psycopg2 for postgres, mysqlclient for mysql (you install with pip)
+
+some weaknesses of ORM: people who mastered sql queries might be able to fine tune queries,
+which ORM may do with a reduced performance. also, "impendance mismatch" , moving data from objects to and from relational tables issues.
+
+
+1- using .exclude(name=...) to exclude
+2-using filter(name__startswith=...) ti filter with names
+3-for multiple filters using Q .filter(Q(name__startswith=..)| Q(surname__endswith=...) & Q(...))
+4- for not op: .filter(~Q(age__gte=20)) filter all with age less than 20 basically here
+5- union: .all().value_list['column'].union(book.objects.all().values_list['same_column'])
+6- selecting specific fields instead of all using .only('field10','field2', 'field3')
+7- using raw query instead using .raw. book.objects.raw("SELECT * from djangopractise_book")
+8- abstract classes for inheritance using 
+	class Meta: 
+		abstract = True
+9- Inheritance without abstract:
+
+class Parent(models.Model):
+    name = models.CharField(max_length=100)
+
+class Child(models.Model):
+    parent = models.OneToOneField(
+        Parent, 
+        on_delete=models.CASCADE, 
+        parent_link=True  # Marks this as the link to the parent model
+    )
+    extra_field = models.CharField(max_length=50)
+
+10- proxy models: n Django, proxy models allow you to create a new class that behaves like an existing model (its "parent" model) but with a different behavior. Proxy models do not create a new database table; they share the database table with their parent model.
+
+Same Database Table: The proxy model uses the same table as the parent model. No new table is created in the database.
+Customized Behavior: You can add or override methods, modify default manager behavior, or change model-specific logic while keeping the same database schema.
+No New Fields: You cannot add new fields to a proxy model since it doesn't create its own table.   
+
+    class Person(models.Model):
+    	name = models.CharField(max_length=100)
+    	age = models.IntegerField()
+
+	class Adult(Person):
+    	class Meta:
+        	proxy = True
+
+    	def is_adult(self):
+        	return self.age >= 18
+
+Adult is a proxy model for Person.
+It shares the same database table as Person.
+The is_adult method adds additional behavior to distinguish adults.
+
+11- F object
+
+The F object in Django allows you to refer to the value of a database field directly in a query. This is useful for performing operations or comparisons between fields in the database without needing to load the data into memory. The F object ensures these operations happen efficiently at the database level.
+
+Common Use Cases for F:
+- Field-to-Field Comparisons: Compare two fields within the same model in a query.
+
+- In-Place Updates: Update a field based on its current value without fetching and re-saving.
+
+- Arithmetic Operations: Perform arithmetic operations like addition, subtraction, multiplication, etc., between a field and a constant or another field.
+
+books = Book.objects.filter(rating__gt=F('publisher__average_rating'))
+
+Book.objects.update(rating=F('rating') + 1)
+
+Book.objects.update(price=F('price') * 0.9)
+
+Book.objects.annotate(
+    discounted_price=F('price') * (1 - F('discount') / 100)
+)
+
+books = Book.objects.filter(price__lt=F('publisher__revenue'))
+
+Book.objects.filter(stock__lt=10).update(stock=F('restocked_value'))
+
+books = Book.objects.filter(
+    Q(rating__gt=F('publisher__average_rating')) | Q(price__lt=20)
+)
+
+Advantages of Using F
+	Efficiency: Operations are performed at the database level, reducing memory usage and query time.
+	Consistency: Ensures calculations are done atomically in the database, avoiding race conditions.
+	Simplifies  Code: Eliminates the need for manually fetching, modifying, and saving data.
+
+Limitations
+	Database Constraints: Operations are limited by the database's capabilities (e.g., specific SQL syntax or constraints).
+	Complex Calculations: For very complex operations, you might need raw SQL or ExpressionWrapper.
+
+12- Transactions:
+In Django (and databases in general), a transaction is a sequence of database operations that are treated as a single unit. These operations are either all successfully applied to the database or none of them are applied, ensuring the database remains in a consistent state.
+
+Follows ACID
+	1- Atomicity: If something goes wrong during a transaction, all changes made in that transaction are undone (rolled back). Prevents partial changes that could leave the database in an invalid or incomplete state.
+	2- Consistency: They prevent partial updates that could leave the database in an invalid state. Prevents invalid or corrupted data from being saved.
+	3- Isolation: solation ensures that transactions are executed independently of each other. The changes made by one transaction are not visible to other transactions until the transaction is complete. Prevents issues like dirty reads, non-repeatable reads, or phantom reads, ensuring data consistency during concurrent operations.
+	4- Durability: Durability ensures that once a transaction is successfully completed (committed), its changes are permanently saved in the database, even if the system crashes or loses power. Guarantees that data is not lost once a transaction is marked as successful.
+
+
+Some solutions for race condition:
+
+	1- wrapping transaction in atomic wrapper to ensure atomicity
+
+	When your logic involves multiple database operations (e.g., reading, writing, updating multiple rows), these operations might not be automatically grouped into a single transaction.
+
+	Without transaction.atomic():
+
+	If one operation succeeds and another fails, the changes from the first operation will still persist, leading to an inconsistent state.
+
+	def process_payment(user, amount):
+	    with transaction.atomic():
+	        account = Account.objects.select_for_update().get(user=user)
+
+	        # Check if the user has enough balance
+	        if account.balance < amount:
+	            raise ValueError("Insufficient funds")
+
+	        # Deduct amount
+	        account.balance -= amount
+	        account.save()
+
+	        # Record transaction
+	        Transaction.objects.create(user=user, amount=amount, status='completed')
+
+	2- Implement Row-Level Locking: Using select_for_update() ensures that only one transaction can access the resource at a time. Other transactions will wait until the lock is released.
+		account = Account.objects.select_for_update().get(user=user)
+	3- Use Unique Constraints for Idempotency
+		For payment processing, ensure that a payment request is executed only once by using an idempotency key. This can be implemented using a unique constraint in the database.
+	4- Use Optimistic Concurrency Control
+		Track a version number or a timestamp on critical resources, like an account balance. When updating, ensure the version hasn’t changed during the transaction.
+			class Account(models.Model):
+			    balance = models.DecimalField(max_digits=10, decimal_places=2)
+			    version = models.PositiveIntegerField(default=0)
+	5- Queue Payment Requests
+		When working with external payment gateways, ensure the state of a payment is checked with the gateway to avoid duplicate processing.
+			Example:
+				Submit payment to the gateway.
+				Verify the response.
+				Check the transaction status before updating your database.
+
+13- aggregates
+
+result = ModelName.objects.aggregate(
+    total_sum=Sum('field_name'),
+    average_value=Avg('field_name'),
+    max_value=Max('field_name'),
+    min_value=Min('field_name'),
+    count_value=Count('field_name')
+)
+
+The aggregate() method returns a dictionary with the results. The keys are the aliases you provide for the aggregates (total_sum, average_value, etc.).
+
+i.e {'total_price': 5000, 'average_price': 250.0}
+
+Combining annotate() and aggregate()
+
+result = Author.objects.annotate(
+    book_count=Count('book'),
+    total_price=Sum('book__price')
+)
+
+14- Annotate
+Adds temporary field for calculation purposes with queryset
+
+In Django, the annotate() function is used to calculate and add summary data to each item in a queryset. It is particularly useful when you need to apply aggregate functions like Count(), Sum(), Avg(), etc., on related models or grouped data, and want the results to be included as additional fields in each row of the queryset.
+
+annotate() calculates values based on the queryset and adds those calculations as fields to each item in the queryset. Unlike aggregate(), which is used to calculate summary data for the entire queryset, annotate() is used to calculate summary data for each individual object in the queryset.
+
+queryset = ModelName.objects.annotate(
+    field_name=Count('related_field')
+)
+
+15- contains & icontainers in filter and search
+
+i.e filter(title__contains=..)
+
+contains is case sensitive, while icontains is case insensitive
+
+the search lookup is used for full-text search capabilities in Django, which is typically backed by a full-text index in the database. It's designed for searching words or phrases in text fields in a more sophisticated way than contains or icontains. The behavior of search depends on the database backend you're using and whether full-text search features are enabled.
+
+books = Book.objects.filter(title__search='Python')
+
+This will return all Book objects where the title contains the word "Python" based on a full-text search index.
+
+PostgreSQL: In PostgreSQL, search leverages its built-in full-text search capabilities, which allow for more advanced querying, such as ranking results or searching for multiple terms.
+Other databases (like MySQL or SQLite): Full-text search might not be available or may require special configuration. For instance, in MySQL, you might need to use MATCH ... AGAINST.
+
+In MySQL, full-text search is supported, but it works differently than the search lookup in Django, which is primarily optimized for PostgreSQL. MySQL requires special indexing for full-text search, and Django's
+
+Full-Text Search in MySQL: MySQL supports full-text indexing on CHAR, VARCHAR, and TEXT columns. However, you need to set up full-text indexes for your fields before performing full-text searches.
+
+or 
+But you can also ignore, doesnt support mysql properly
+
+
+16- on_delete difference between protect and restrict
+
+RESTRICT
+Behavior: Prevents the deletion of a referenced object only if related objects still exist.
+Use Case: You can use RESTRICT to ensure the integrity of a relationship. If a related object references the object being deleted, the deletion is blocked.
+Error Message: Raises a RestrictedError when deletion is attempted.
+Cascade Effect: Allows selective deletion, meaning if a related object has no other dependencies, it can still be removed.
+
+
+PROTECT
+Behavior: Prevents the deletion of a referenced object unconditionally, regardless of whether other related objects exist or not.
+Use Case: Use PROTECT when you want to ensure the referenced object cannot be deleted under any circumstances while it is being referenced.
+Error Message: Raises a ProtectedError when deletion is attempted.
+Cascade Effect: Does not allow the referenced object to be deleted as long as any reference exists.
+
+
+however assuming a model references 2 other models A and B
+
+if A is set to CASCADE and B is set to restrict. if you delete A the models associated with it will be deleted even if B is also referenced and restrict. BUT with protect it wont allow such behaviour to occur.
